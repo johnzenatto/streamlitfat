@@ -6,18 +6,16 @@ import matplotlib.pyplot as plt
 import locale
 
 import Linha as lin
+import Pizza as pz
 
-
-def CarregaPlanilha(df):
-    st.title('Informações Básicas da Planilha')
+def CarregaPlanilha(df, valor):
+    # st.title('Informações Básicas da Planilha')
 
     col1, col2 = st.columns(2)
     with col1:
         st.text('Quantidade de Itens: ' + str(len(df)))
-        totalliqsum = df['Total'].sum()
-        st.text('Soma do Total Líquido: R$ {:,.2f}'.format(totalliqsum))
-        # totalbrutosum = df['TotalBruto'].sum()
-        # st.text('Soma do Total Líquido: R$ {:,.2f}'.format(totalbrutosum))
+        total = df[valor].sum()
+        st.text('Soma do {}: {:,.2f}'.format(valor, total))
     
     # Display the filtered DataFrame
     if df.empty:
@@ -56,7 +54,7 @@ def CarregaPlanilha(df):
         df['Mês'] = df['Data'].dt.month
 
         # Criar DataFrame de soma dos valores da coluna 'Total' por mês e ano
-        contagem = df.groupby(['Ano', 'Mês'])['Total'].sum().unstack(fill_value=0)
+        contagem = df.groupby(['Ano', 'Mês'])[valor].sum().unstack(fill_value=0)
 
         # Criar o heatmap
         plt.figure(figsize=(12, 4), facecolor='#0E1117')
@@ -76,4 +74,8 @@ def CarregaPlanilha(df):
         # Exibir o heatmap
         st.pyplot(plt)
 
-    lin.LinhaMensal(df, 'Mensal','Un. Negócio','Total',downloader=True,Titulo='Média Valor Venda Mês', tipo='mean' )
+    col1, col2 = st.columns(2)
+    with col1:
+        lin.LinhaMensal(df, 'Mensal','Un. Negócio',valor,downloader=True)
+    with col2:
+        pz.PizzaPorcentagem(df,'Un. Negócio', valor)

@@ -1,29 +1,44 @@
 import pandas as pd
 import streamlit as st
 
-def DroparColunas(df):
-    df['TotalBruto'] = df['Total']
-    df = df.drop(columns=['Total'])
+def DefineFloat(df, Campo):
+    #Define valores como float
+    try:
+        df[Campo] = df[Campo].str.replace('.', '').str.replace(',', '.').astype(float)
+    except:
+        df[Campo] = df[Campo].astype(float)
+    df = df.dropna(subset=[Campo], axis=0)
+    return df
 
-    df['Total'] = df['Valor Total Líquido']
-
-    df = df.dropna(subset=['Total'], axis=0)
-
+def TratarCSV(df):
+    
+    df = DefineFloat(df, 'Total')
+    
+    #Dropa Indesejado
     df.drop(['Cod Agrupador','Nome Fantasia', 'Razão Social Agrupador',
              'Data Nascimento Cliente', 'Ped. Representante', 'Referência', 'Num. Ord. Compra', 'Num. Série',
-             'Cod Origem', 'Base Comissão', '%Comissão','Valor Comissão', 'Valor Conversão Dólar', 'Valor em Dólar',
+             'Cod Origem', 'Valor Conversão Dólar', 'Valor em Dólar',
              'Data Moeda', 'Moeda Compra', 'Valor Total Dólar', 'Valor Conversão Euro', 'Valor em Euro', 'Valor Total Euro',
-             'Cód. Transportadora','Unnamed: 83', 'CPF/CNPJ Representante', 'Num. Ped. Venda', 'Num. Venda',
+             'Cód. Transportadora', 'CPF/CNPJ Representante', 'Num. Ped. Venda', 'Num. Venda',
              'Num. Nota', 'CPF/CNPJ', 'CEP'], axis=1, inplace=True)
+
     return df
 
 def ArrumarData(df):
+    df['Condicao Pagamento Venda'] = df['Condicao Pagamento Venda'].astype(str)
+    df['Un. Negócio'] = df['Un. Negócio'].astype(int)
     df['Ano'] = df['Ano'].astype(int)
     df = df.rename(columns={'Data Nota': 'Data'})
+    
+    num_invalid_dates = df[~df['Data'].str.match(r'\d{2}/\d{2}/\d{4}')].shape[0]
+    
+    # Filter out rows with invalid dates
+    df = df[df['Data'].str.match(r'\d{2}/\d{2}/\d{4}')]
+
     df['Data'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
     df['Mensal'] = df['Data'].dt.strftime('%m/%Y')
-    
-    return df
+
+    return df, num_invalid_dates
 
 def RemoveMenuStreamlit():
     esconde = """

@@ -3,7 +3,10 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 
-def ValorPorCampo(df, ColunaCampo, ColunaValor, titulo, downloader=True, rotate=45, exibir=15, linhamedia=True, size=1):
+def ValorPorCampo(df, ColunaCampo, ColunaValor, titulo='', downloader=True, rotate=45, exibir=15, linhamedia=True, size=1):
+    if titulo == '':
+        titulo = f'Valor por {ColunaCampo} - {ColunaValor}'
+
     Valor_por_Coluna = df.groupby(ColunaCampo)[ColunaValor].sum()
     Valor_por_Coluna = Valor_por_Coluna.sort_values(ascending=False)
     
@@ -14,7 +17,7 @@ def ValorPorCampo(df, ColunaCampo, ColunaValor, titulo, downloader=True, rotate=
     totais_por_Coluna = Valor_por_Coluna.values
 
     # Crie um DataFrame com os dados
-    data = pd.DataFrame({ColunaCampo: campo, 'Total': totais_por_Coluna})
+    data = pd.DataFrame({ColunaCampo: campo, ColunaValor: totais_por_Coluna})
 
     # Crie o gráfico de barras usando Plotly Express
     fig = px.bar(data, x=ColunaCampo, y=ColunaValor, title=titulo)
@@ -77,3 +80,51 @@ def ValorPorMesSeg(df, ColunaData, ColunaValor, ColunaSegmento, Titulo='Valor po
 
     # Exiba o gráfico de barras empilhadas
     st.plotly_chart(fig)
+
+def ValorPorCampoData(df, ColunaCampoMensal, ColunaValor, titulo='', downloader=True, rotate=45, exibir=15, linhamedia=True, size=1):
+    if titulo == '':
+        titulo = f'Valor por {ColunaCampoMensal} - {ColunaValor}'
+
+    Valor_por_Coluna = df.groupby(ColunaCampoMensal)[ColunaValor].sum()
+    Valor_por_Coluna = Valor_por_Coluna.sort_values(ascending=False)
+    
+    # Limitar o DataFrame aos valores desejados
+    Valor_por_Coluna = Valor_por_Coluna.head(exibir)
+    
+    campo = Valor_por_Coluna.index
+    totais_por_Coluna = Valor_por_Coluna.values
+
+    # Converter a coluna 'MM/YYYY' para uma categoria e reordená-la
+    campo = pd.Categorical(campo, categories=campo, ordered=True)
+
+    # Crie um DataFrame com os dados
+    data = pd.DataFrame({ColunaCampoMensal: campo, ColunaValor: totais_por_Coluna})
+
+    # Crie o gráfico de barras usando Plotly Express
+    fig = px.bar(data, x=ColunaCampoMensal, y=ColunaValor, title=titulo)
+
+    # Adicione uma linha reta no valor da média
+    if linhamedia:
+        media = Valor_por_Coluna.mean()
+        fig.add_hline(y=media, line_dash="dot", line_color="red", name="Média")
+        st.text(f'Média R${media:,.2f}')
+
+    # Size
+    if size == 1:
+        fig.update_layout(width=600, height=410)
+    elif size == 2:
+        fig.update_layout(width=1420, height=400)
+    
+    # Personalize o layout do gráfico
+    fig.update_xaxes(categoryorder='total ascending', tickvals=campo, ticktext=campo, tickangle=rotate)  # Rótulos do eixo x com rotação
+    fig.update_layout(xaxis_title=ColunaCampoMensal, yaxis_title=ColunaValor)  # Títulos dos eixos x e y
+
+    # Exiba o gráfico de barras
+    st.plotly_chart(fig)
+    
+    if downloader:
+        with st.expander('Dados da Tabela'):
+            st.write(data)
+            csv = data.to_csv(index=False).encode('UTF-8')
+            file = titulo + '.csv'
+            st.download_button('Download CSV', data=csv, file_name=file, mime="text/csv", help="Fazer o download em CSV")

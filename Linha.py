@@ -3,7 +3,10 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 
-def LinhaMensal(df, CampoData, CampoGrupo, CampoValor, Titulo='Gráfico Linha', downloader=True, tipo='sum', exibir=10, size=[0,0]):
+def LinhaMensal(df, CampoData, CampoGrupo, CampoValor, Titulo='', downloader=True, tipo='sum', exibir=10, size=[0,0]):
+    if Titulo == '':
+        Titulo = f'Linha Mensal {CampoGrupo} - {CampoValor}'
+    
     df_Linha = df
     # Converte a coluna de datas para o tipo datetime
     df_Linha[CampoData] = pd.to_datetime(df_Linha[CampoData], format='%m/%Y')

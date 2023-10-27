@@ -3,8 +3,10 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 
-def PizzaPorcentagem(df, ColunaCampo, colunavalor, titulo='Pizza Porcentagem', juntarmenores=3, legenda=True, downloader = True):
+def PizzaPorcentagem(df, ColunaCampo, colunavalor, titulo='', juntarmenores=3, legenda=True, downloader = True):
     # Calculate the percentage distribution and group items less than juntamenores into "Outros"
+    if titulo == '':
+        titulo = f"Pizza Porcentagem {ColunaCampo} - {colunavalor}"
     valor_coluna = df.groupby(ColunaCampo)[colunavalor].sum()
     porcentagens = (valor_coluna / valor_coluna.sum()) * 100
     limite_porcentagem = juntarmenores
@@ -59,9 +61,9 @@ def Lasanha(df, CampoInterno, CampoExterno, CampoValor, CampoMeio='', agruparin=
     fig = px.sunburst(df_exploratory, path=path, values=CampoValor)
     
     if CampoMeio:
-        title = f'Gráfico de Explosão Solar - {CampoInterno} - {CampoMeio} - {CampoExterno}'
+        title = f'Gráfico de Explosão Solar - {CampoInterno} - {CampoMeio} - {CampoExterno} - {CampoValor}'
     else:
-        title = f'Gráfico de Explosão Solar - {CampoInterno} - {CampoExterno}'
+        title = f'Gráfico de Explosão Solar - {CampoInterno} - {CampoExterno} - {CampoValor}'
 
     fig.update_layout(title=title)
     st.plotly_chart(fig)
